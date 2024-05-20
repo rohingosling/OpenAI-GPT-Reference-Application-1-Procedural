@@ -105,7 +105,7 @@ def get_language_model_response ( client, conversation_history, streaming_enable
     
     except Exception as e:
 
-        return f"An error occurred: {str(e)}"
+        return f"\nAn error occurred: {str(e)}\n"
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Process language model response.
@@ -113,7 +113,17 @@ def get_language_model_response ( client, conversation_history, streaming_enable
 
 def process_language_model_response ( response ):
 
+    # Print AI prompt symbol. 
+
     print ( f"\n{CONSOLE_PROMPT_AI}" )
+
+    # Handle the error message case
+
+    if isinstance ( response, str ):            
+        print ( response )
+        return response
+    
+    # Handle normal response. 
 
     if LM_STREAMING_ENABLED:
 
@@ -171,7 +181,7 @@ def save_chat_log_to_file ( conversation_history ):
 
     # Write the conversation history to the file.
 
-    with open ( file_name, 'w' ) as file:
+    with open ( file_name, 'w', encoding = 'utf-8' ) as file:
 
         file.write ( f'Model:             {LM_MODEL}\n' )
         file.write ( f'Max Tokens:        {LM_MAX_TOKENS}\n' )
