@@ -1,0 +1,1 @@
+pip freeze > venv_requirements.txt
