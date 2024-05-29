@@ -1,7 +1,6 @@
 
 import os
-from datetime import datetime
-from openai   import OpenAI
+from openai import OpenAI
 
 # Constants.
 
@@ -18,7 +17,7 @@ LM_MODEL                 = LM_MODEL_GPT_3_5_TURBO
 LM_MAX_TOKENS            = 1024
 LM_TEMPERATURE           = 0.7
 LM_STREAMING_ENABLED     = True
-LM_SYSTEM_PROMPT         = f'You are an intelligent assistant. You always provide well-reasoned answers that are both correct and helpful.'
+LM_SYSTEM_PROMPT         = 'You are a general purpose AI assistant. You always provide well-reasoned answers that are both correct and helpful.'
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Main loop. 
@@ -35,7 +34,7 @@ def main_loop ():
     # Execute main loop. 
 
     while command == COMMAND_RUN:
-
+ 
         # Get user input prompt, and check the user inpur for application commands. 
 
         user_input = get_user_prompt         ()
@@ -66,7 +65,7 @@ def main_loop ():
 
 def get_user_prompt ():
 
-    user_input = input ( f"{CONSOLE_PROMPT_USER}\n" )
+    user_input = input ( f"\n{CONSOLE_PROMPT_USER}\n" )
 
     return user_input
 
@@ -134,11 +133,11 @@ def process_language_model_response ( response ):
                 print ( chunk.choices [ 0 ].delta.content, end="", flush = True )
                 response_stream [ "content" ] += chunk.choices [ 0 ].delta.content
 
-        print ( "\n" )
+        print ()
         return response_stream [ "content" ]
     else:
 
-        print ( f"{response}\n" )
+        print ( f"{response}" )
         return response
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -152,8 +151,7 @@ def print_program_info ():
     print ( f'- Model:             {LM_MODEL}' )
     print ( f'- Max Tokens:        {LM_MAX_TOKENS}' )
     print ( f'- Temperature:       {LM_TEMPERATURE}' )
-    print ( f'- Streaming Enabled: {LM_STREAMING_ENABLED}' )
-    print ()
+    print ( f'- Streaming Enabled: {LM_STREAMING_ENABLED}' )    
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Shutdown application.
