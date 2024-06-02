@@ -1,23 +1,34 @@
-
 import os
+import platform
 from openai import OpenAI
 
-# Constants.
+# Global Constants.
 
-CONSOLE_PROMPT_USER      = '[User]'
-CONSOLE_PROMPT_AI        = '[AI]'
-COMMAND_NONE             = 0
-COMMAND_RUN              = 1
-COMMAND_EXIT_APPLICATION = 2
-PROGRAM_CHAT_LOG_FOLDER  = 'chat_log'
-LM_MODEL_GPT_3_5_TURBO   = 'gpt-3.5-turbo'
-LM_MODEL_GPT_4           = 'gpt-4'
-LM_MODEL_GPT_4O          = 'gpt-4o'
-LM_MODEL                 = LM_MODEL_GPT_3_5_TURBO
-LM_MAX_TOKENS            = 1024
-LM_TEMPERATURE           = 0.7
-LM_STREAMING_ENABLED     = True
-LM_SYSTEM_PROMPT         = 'You are a general purpose AI assistant. You always provide well-reasoned answers that are both correct and helpful.'
+APPLICATION_STATE_IDLE                         = 0
+APPLICATION_STATE_RUNNING                      = 1
+APPLICATION_STATE_STOPPED                      = 2
+APPLICATION_COMMAND_NONE                       = 0
+APPLICATION_COMMAND_EXIT                       = 1
+APPLICATION_COMMAND_CLEAR_TERMINAL             = 2
+APPLICATION_PROMPT_TEXT_EXIT                   = 'exit'
+APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL_WINDOWS = 'cls'
+APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL_LINUX   = 'clear'
+
+MODEL_NAME_GPT_3_5_TURBO  = 'gpt-3.5-turbo'
+MODEL_NAME_GPT_4          = 'gpt-4'
+MODEL_NAME_GPT_4O         = 'gpt-4o'
+
+# Global variables. 
+
+application_state           = APPLICATION_STATE_IDLE
+application_agent_name_user = 'User'
+application_agent_name_ai   = 'AI'
+application_chat_log_folder = 'chat_log'
+model_name                  = MODEL_NAME_GPT_3_5_TURBO
+model_max_tokens            = 1024
+model_temperature           = 0.7
+model_streaming_enabled     = True
+model_system_prompt         = 'You are a general purpose AI assistant. You always provide well-reasoned answers that are both correct and helpful.'
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Main loop. 
@@ -28,31 +39,39 @@ def main_loop ():
     # Initialise local variables. 
 
     client               = OpenAI ( api_key = os.environ [ 'OPENAI_API_KEY' ] )
-    conversation_history = [ { "role": "system", "content": LM_SYSTEM_PROMPT } ]
-    command              = COMMAND_RUN
-
+    conversation_history = [ { "role" : "system", "content" : model_system_prompt } ]
+    
     # Execute main loop. 
 
-    while command == COMMAND_RUN:
+    application_state   = APPLICATION_STATE_RUNNING
+    application_command = APPLICATION_COMMAND_NONE
+
+    while application_state == APPLICATION_STATE_RUNNING:
  
-        # Get user input prompt, and check the user inpur for application commands. 
+        # Get user input prompt, and check the user input for application commands. 
 
-        user_input = get_user_prompt         ()
-        command    = get_application_command ( user_input )
+        user_input          = get_user_prompt ()
+        application_command = get_application_command ( user_input )
 
-        # Process user input prompt. 
+        # Get response from language model. 
 
-        if command == COMMAND_RUN:
+        if application_command == APPLICATION_COMMAND_NONE:
 
-            # Update conversation history, and send prompt to langauge model.
+            # Query language model and update conversation history. 
+            # 1. Append user prompt to conversation history.
+            # 2. Query language model. 
+            # 3. Append language model response to conversation history. 
 
             conversation_history.append ( { "role": "user", "content": user_input } )        
-            response = get_language_model_response ( client, conversation_history, LM_STREAMING_ENABLED )
+            response      = query_language_model ( client, conversation_history )
+            response_text = render_language_model_response ( response )
+            conversation_history.append ( { "role": "assistant", "content": response_text } )
 
-            # Update conversation history, and process language model response. 
-            
-            response = process_language_model_response ( response )
-            conversation_history.append ( { "role": "assistant", "content": response } )
+        else:
+
+            # Execute application command. 
+
+            application_state, application_command = execute_application_command ( application_command )
 
     # Shut down program.
 
@@ -65,80 +84,148 @@ def main_loop ():
 
 def get_user_prompt ():
 
-    user_input = input ( f"\n{CONSOLE_PROMPT_USER}\n" )
+    # Compile console prompt for the user.
 
-    return user_input
+    console_prompt_user = f'[{application_agent_name_user}]'
+
+    # Get prompt text from the user and return the prompt to the caller. 
+
+    user_prompt = input ( f'\n{console_prompt_user}\n' )
+
+    # REturn user prompt to the caller.     
+
+    return user_prompt
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Process application command. 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def get_application_command ( user_input ):
+def get_application_command ( user_prompt ):
 
-    if user_input.lower() == "exit":
-        command = COMMAND_EXIT_APPLICATION
+    # Inisialize local variables. 
+
+    command     = APPLICATION_COMMAND_NONE
+    user_prompt = user_prompt.lower()       # Normalise user prompt to lower case. 
+
+    # Identify any application commands the user intends to execute.    
+
+    if user_prompt == APPLICATION_PROMPT_TEXT_EXIT:
+        command = APPLICATION_COMMAND_EXIT
+
+    elif user_prompt in ( APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL_WINDOWS, APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL_LINUX):
+        command = APPLICATION_COMMAND_CLEAR_TERMINAL
+
     else:
-        command = COMMAND_RUN
+        command = APPLICATION_COMMAND_NONE
 
-    return command    
+    # Return selected command to the caller. 
+
+    return command
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Execute application command. 
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+def execute_application_command ( command ):
+
+    # Initialize local variables. 
+
+    application_state = APPLICATION_STATE_IDLE
+
+    # Execute commands. 
+
+    if command == APPLICATION_COMMAND_NONE:
+        application_state = APPLICATION_STATE_RUNNING
+
+    elif command == APPLICATION_COMMAND_EXIT:
+        application_state = APPLICATION_STATE_STOPPED
+
+    elif command == APPLICATION_COMMAND_CLEAR_TERMINAL:
+        application_state = APPLICATION_STATE_RUNNING
+
+        if platform.system () == "Windows":
+            os.system ( 'cls' )
+
+        else:
+            os.system ( 'clear' )
+
+    else:
+        application_state = APPLICATION_STATE_RUNNING
+
+    # Return application state and reset command. 
+
+    return application_state, APPLICATION_COMMAND_NONE
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Get language model response. 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def get_language_model_response ( client, conversation_history, streaming_enabled = False ):
+def query_language_model ( client, conversation_history ):
     
     try:
+
+        # Query the language model. 
+
         response = client.chat.completions.create (
-            model       = LM_MODEL,
+            model       = model_name,
             messages    = conversation_history,
-            max_tokens  = LM_MAX_TOKENS,
-            temperature = LM_TEMPERATURE,
-            stream      = LM_STREAMING_ENABLED
+            max_tokens  = model_max_tokens,
+            temperature = model_temperature,
+            stream      = model_streaming_enabled
         )
 
-        if LM_STREAMING_ENABLED:
-            return response
-        else:
-            return response.choices [ 0 ].message.content
+        # Return the response object. 
+        # - We return the response object rather than the response text, so that the renderer can render streaming responses if `stream` is True.        
+        # - If `stream` is False, the renderer will retrieve the response text with `response.choices [ 0 ].message.content`.
+
+        return response
     
     except Exception as e:
 
-        return f"\nAn error occurred: {str(e)}\n"
+        return f'\n[ERROR]\n{str(e)}\n'
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Process language model response.
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def process_language_model_response ( response ):
+def render_language_model_response ( response ):
 
-    # Print AI prompt symbol. 
+    # Initialise local variables.
 
-    print ( f"\n{CONSOLE_PROMPT_AI}" )
+    response_text     = ''                                  # Initialise to empty string. We'll populate after handing streaming or non-streaming responses.
+    console_prompt_ai = f'[{application_agent_name_ai}]'    # Compile terminal prompt.
 
-    # Handle the error message case
+    # Print response. 
 
-    if isinstance ( response, str ):            
-        print ( response )
-        return response
-    
-    # Handle normal response. 
+    print ( f'\n{console_prompt_ai}')
 
-    if LM_STREAMING_ENABLED:
+    if model_streaming_enabled:
 
-        response_stream = { "role": "assistant", "content": "" }
+        # Output chunk by chunk as the response is streamed. 
+
+        response_stream = { 'role': 'assistant', 'content': '' }
     
         for chunk in response:
             if chunk.choices [ 0 ].delta.content:
-                print ( chunk.choices [ 0 ].delta.content, end="", flush = True )
-                response_stream [ "content" ] += chunk.choices [ 0 ].delta.content
-
+                print ( chunk.choices [ 0 ].delta.content, end='', flush = True )
+                response_stream [ 'content' ] += chunk.choices [ 0 ].delta.content
         print ()
-        return response_stream [ "content" ]
+
+        # For a streamed response, get the response text from the completed response stream.
+
+        response_text = response_stream [ 'content' ]
+        
     else:
 
-        print ( f"{response}" )
-        return response
+        # For a non-streamed response, get the response text from the response object, and write to the terminal. 
+
+        response_text = response.choices [ 0 ].message.content
+        print ( f"{response_text}" )
+
+    # Return language model response text. 
+
+    return response_text
+        
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Display program info.
@@ -148,10 +235,10 @@ def print_program_info ():
 
     print ()
     print ( f'Language Model:' )
-    print ( f'- Model:             {LM_MODEL}' )
-    print ( f'- Max Tokens:        {LM_MAX_TOKENS}' )
-    print ( f'- Temperature:       {LM_TEMPERATURE}' )
-    print ( f'- Streaming Enabled: {LM_STREAMING_ENABLED}' )    
+    print ( f'- Model:             {model_name}' )
+    print ( f'- Max Tokens:        {model_max_tokens}' )
+    print ( f'- Temperature:       {model_temperature}' )
+    print ( f'- Streaming Enabled: {model_streaming_enabled}' )    
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Shutdown application.
@@ -159,7 +246,7 @@ def print_program_info ():
 
 def save_chat_log_to_file ( conversation_history ):
 
-    folder_path = PROGRAM_CHAT_LOG_FOLDER
+    folder_path = application_chat_log_folder
     
     # Ensure the folder exists; if not, create it.
 
@@ -181,10 +268,10 @@ def save_chat_log_to_file ( conversation_history ):
 
     with open ( file_name, 'w', encoding = 'utf-8' ) as file:
 
-        file.write ( f'Model:             {LM_MODEL}\n' )
-        file.write ( f'Max Tokens:        {LM_MAX_TOKENS}\n' )
-        file.write ( f'Temperature:       {LM_TEMPERATURE}\n' )
-        file.write ( f'Streaming Enabled: {LM_STREAMING_ENABLED}\n' )
+        file.write ( f'Model:             {model_name}\n' )
+        file.write ( f'Max Tokens:        {model_max_tokens}\n' )
+        file.write ( f'Temperature:       {model_temperature}\n' )
+        file.write ( f'Streaming Enabled: {model_streaming_enabled}\n' )
         file.write ( '\n' )
 
         for row in conversation_history:
