@@ -1,46 +1,118 @@
+#---------------------------------------------------------------------------------------------------------------------------------------------------------
+# Application   Conversation Agent Reference Application
+# Version:      1.0
+# Release Date: 2024-04-06
+# Author:       Rohin Gosling
+#
+# Description:
+#
+# - General-purpose conversation agent reference application, that can be used as the starting point for an OpenAI API-style chatbot.
+#
+# - main_loop:
+#
+#   - 1. Get user input prompt. 
+#   - 2.     Get application command from uer input prompt. 
+#   - 3.     Append user input prompt to conversation history.
+#   - 4. Query language model using user input prompt.
+#   - 5.     Render language model response.
+#   - 6.     Append language model response to conversation history.
+#   - 7. Execute application command. 
+#
+# Features:
+#
+# - Turn-based conversation agent, with conversation history.
+# - Autosave conversation history to text file. 
+#
+# Usage Notes:
+#
+# - The variable `model_client` is initialized to an instance of `OpenAI`.
+#   - OpenAI.api_key is set using the environment variable `OPENAI_API_KEY`.
+#   - You will need to set `OPENAI_API_KEY` to hold your OpenAI API key. 
+#   - Or replace `api_key = os.environ [ 'OPENAI_API_KEY' ]` with `api_key = <Your OpenAI API key>`.
+#
+# - On first use run the following batch files in order.
+#   1. `venv_create.bat` to create the Python virtual environment.
+#   2. 'venv_install_requirements.bat` to install dependent packages. 
+#
+# - For general use, run the following batch files before use. 
+#   1. `venv_activate.bat` to activate Python virtual environment.
+#
+# - To-Do:
+#   - None.
+#
+#---------------------------------------------------------------------------------------------------------------------------------------------------------
+
 import os
 import platform
 from openai import OpenAI
 
 # Global Constants.
 
-APPLICATION_STATE_IDLE                         = 0
-APPLICATION_STATE_RUNNING                      = 1
-APPLICATION_STATE_STOPPED                      = 2
-APPLICATION_COMMAND_NONE                       = 0
-APPLICATION_COMMAND_EXIT                       = 1
-APPLICATION_COMMAND_CLEAR_TERMINAL             = 2
-APPLICATION_PROMPT_TEXT_EXIT                   = 'exit'
-APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL_WINDOWS = 'cls'
-APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL_LINUX   = 'clear'
+APPLICATION_STATE_IDLE                              = 0
+APPLICATION_STATE_RUNNING                           = 1
+APPLICATION_STATE_STOPPED                           = 2
+APPLICATION_COMMAND_NONE                            = 0
+APPLICATION_COMMAND_EXIT                            = 1
+APPLICATION_COMMAND_CLEAR_TERMINAL                  = 2
+APPLICATION_PROMPT_TEXT_EXIT                        = 'exit'
+APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL              = 'clear'
+APPLICATION_TERMINAL_COMMAND_CLEAR_TERMINAL_WINDOWS = 'cls'
+APPLICATION_TERMINAL_COMMAND_CLEAR_TERMINAL_LINUX   = 'clear'
 
-MODEL_NAME_GPT_3_5_TURBO  = 'gpt-3.5-turbo'
-MODEL_NAME_GPT_4          = 'gpt-4'
-MODEL_NAME_GPT_4O         = 'gpt-4o'
+MODEL_NAME_GPT_3_5_TURBO = 'gpt-3.5-turbo'
+MODEL_NAME_GPT_4         = 'gpt-4'
+MODEL_NAME_GPT_4O        = 'gpt-4o'
 
-# Global variables. 
-
-application_state           = APPLICATION_STATE_IDLE
-application_agent_name_user = 'User'
-application_agent_name_ai   = 'AI'
-application_chat_log_folder = 'chat_log'
-model_name                  = MODEL_NAME_GPT_3_5_TURBO
-model_max_tokens            = 1024
-model_temperature           = 0.7
-model_streaming_enabled     = True
-model_system_prompt         = 'You are a general purpose AI assistant. You always provide well-reasoned answers that are both correct and helpful.'
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Main loop. 
+# Main loop.
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Function name: main_loop
+#
+# Description:
+# - This function is the main execution loop of the conversation agent application.
+# - It initializes the necessary variables, manages user input, queries the language model for responses, handles application commands, and maintains the 
+#   conversation history.
+#
+# Parameters:
+# - None
+#
+# Return Values:
+# - None
+#
+# Preconditions:
+# - The environment variable 'OPENAI_API_KEY' must be set with a valid OpenAI API key.
+# - The required OpenAI library must be installed and importable.
+#
+# Postconditions:
+# - The application continuously runs, processing user input and generating responses from the language model until an exit command is received.
+# - The conversation history is saved to a log file upon program termination.
+#
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 def main_loop ():
 
     # Initialise local variables. 
 
-    client               = OpenAI ( api_key = os.environ [ 'OPENAI_API_KEY' ] )
-    conversation_history = [ { "role" : "system", "content" : model_system_prompt } ]
-    
+    # Global variables. 
+
+    application_state           = APPLICATION_STATE_IDLE
+    application_agent_name_user = 'User'
+    application_agent_name_ai   = 'AI'
+    application_chat_log_folder = 'chat_log'
+    model_client                = OpenAI ( api_key = os.environ [ 'OPENAI_API_KEY' ] )
+    model_name                  = MODEL_NAME_GPT_4O
+    model_max_tokens            = 1024
+    model_temperature           = 0.7
+    model_streaming_enabled     = True
+    model_system_prompt         = 'You are a general purpose AI assistant. You always provide well-reasoned answers that are both correct and helpful.'    
+    model_conversation_history  = [ { "role" : "system", "content" : model_system_prompt } ]
+
+    # Print application info to the terminal. 
+
+    print_program_info ( model_name, model_max_tokens, model_temperature, model_streaming_enabled )
+
     # Execute main loop. 
 
     application_state   = APPLICATION_STATE_RUNNING
@@ -48,24 +120,29 @@ def main_loop ():
 
     while application_state == APPLICATION_STATE_RUNNING:
  
-        # Get user input prompt, and check the user input for application commands. 
+        # Get user input prompt.
+        # 1. Get the user's input prompt from the terminal.
+        # 2. Identify and initialise any application commands the user may have issued.
+        # 3. Save the user's prompt to the conversation history.
 
-        user_input          = get_user_prompt ()
+        user_input          = get_user_prompt ( application_agent_name_user )        
         application_command = get_application_command ( user_input )
+        model_conversation_history.append ( { "role": "user", "content": user_input } )
 
         # Get response from language model. 
 
         if application_command == APPLICATION_COMMAND_NONE:
 
-            # Query language model and update conversation history. 
-            # 1. Append user prompt to conversation history.
-            # 2. Query language model. 
-            # 3. Append language model response to conversation history. 
+            # Query language model and update conversation history.             
+            # 1. Query language model. We will return the response object, not the text. The renderer will decide whether to extract response text or use the 
+            #    object based on whether `model_streaming_enabled` is True or not.
+            # 2. Render model response. `model_streaming_enabled` is True then we will render streaming output from the model, otherwise we will just render
+            #    the complete response text from the model. 
+            # 3. Append language model response to conversation history.
 
-            conversation_history.append ( { "role": "user", "content": user_input } )        
-            response      = query_language_model ( client, conversation_history )
-            response_text = render_language_model_response ( response )
-            conversation_history.append ( { "role": "assistant", "content": response_text } )
+            model_response      = query_language_model ( model_client, model_name, model_max_tokens, model_temperature, model_streaming_enabled, model_conversation_history )
+            model_response_text = render_language_model_response ( model_response, application_agent_name_ai, model_streaming_enabled )
+            model_conversation_history.append ( { "role": "assistant", "content": model_response_text } )
 
         else:
 
@@ -75,29 +152,70 @@ def main_loop ():
 
     # Shut down program.
 
-    save_chat_log_to_file ( conversation_history )
+    save_chat_log_to_file ( application_chat_log_folder, model_name, model_max_tokens, model_temperature, model_streaming_enabled, model_conversation_history )
             
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Get user prompt. 
+# Get user prompt.
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Function name: get_user_prompt
+#
+# Description:
+# - This function prompts the user for input by displaying a terminal prompt with the user's agent name and then captures the input.
+#
+# Parameters:
+# - application_agent_name_user (str): The name of the user agent to be displayed in the terminal prompt.
+#
+# Return Values:
+# - user_prompt (str): The input provided by the user.
+#
+# Preconditions:
+# - The parameter 'application_agent_name_user' must be a valid string representing the user's agent name.
+#
+# Postconditions:
+# - The user's input is captured and returned as a string.
+#
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def get_user_prompt ():
 
-    # Compile console prompt for the user.
+def get_user_prompt ( application_agent_name_user ):
 
-    console_prompt_user = f'[{application_agent_name_user}]'
+    # Compile terminal prompt for the user.
+
+    terminal_prompt_user = f'[{application_agent_name_user}]'
 
     # Get prompt text from the user and return the prompt to the caller. 
 
-    user_prompt = input ( f'\n{console_prompt_user}\n' )
+    user_prompt = input ( f'\n{terminal_prompt_user}\n' )
 
     # REturn user prompt to the caller.     
 
     return user_prompt
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Process application command. 
+# Get application command from user prompt. 
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Function name: get_application_command
+#
+# Description:
+# - This function processes the user's input prompt to identify and return any application command embedded within the prompt.
+# - It normalizes the user prompt to lower case and checks for specific command keywords to determine the appropriate command.
+#
+# Parameters:
+# - user_prompt (str): The input prompt provided by the user.
+#
+# Return Values:
+# - command (int): An integer representing the identified application command. Possible values are:
+#   - APPLICATION_COMMAND_NONE (0): No command identified.
+#   - APPLICATION_COMMAND_EXIT (1): Exit command identified.
+#   - APPLICATION_COMMAND_CLEAR_TERMINAL (2): Clear terminal command identified.
+#
+# Preconditions:
+# - The parameter 'user_prompt' must be a valid string.
+#
+# Postconditions:
+# - The appropriate application command is returned based on the content of the user prompt.
+#
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def get_application_command ( user_prompt ):
@@ -112,7 +230,7 @@ def get_application_command ( user_prompt ):
     if user_prompt == APPLICATION_PROMPT_TEXT_EXIT:
         command = APPLICATION_COMMAND_EXIT
 
-    elif user_prompt in ( APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL_WINDOWS, APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL_LINUX):
+    elif user_prompt == APPLICATION_PROMPT_TEXT_CLEAR_TERMINAL:
         command = APPLICATION_COMMAND_CLEAR_TERMINAL
 
     else:
@@ -123,7 +241,35 @@ def get_application_command ( user_prompt ):
     return command
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Execute application command. 
+# Execute application command.
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Function name: execute_application_command
+#
+# Description:
+# - This function executes the given application command and returns the updated application state.
+# - It handles commands such as running, stopping, and clearing the terminal based on the operating system.
+#
+# Parameters:
+# - command (int): An integer representing the application command to be executed. Possible values are:
+#   - APPLICATION_COMMAND_NONE (0): No command to execute.
+#   - APPLICATION_COMMAND_EXIT (1): Command to exit the application.
+#   - APPLICATION_COMMAND_CLEAR_TERMINAL (2): Command to clear the terminal.
+#
+# Return Values:
+# - application_state (int): An integer representing the current state of the application. Possible values are:
+#   - APPLICATION_STATE_IDLE (0): The application is idle.
+#   - APPLICATION_STATE_RUNNING (1): The application is running.
+#   - APPLICATION_STATE_STOPPED (2): The application is stopped.
+# - command (int): Resets the command to APPLICATION_COMMAND_NONE (0).
+#
+# Preconditions:
+# - The parameter 'command' must be a valid integer representing a command.
+#
+# Postconditions:
+# - The application state is updated based on the executed command.
+# - The terminal is cleared if the clear terminal command is executed.
+# - The command is reset to APPLICATION_COMMAND_NONE.
+#
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def execute_application_command ( command ):
@@ -144,10 +290,10 @@ def execute_application_command ( command ):
         application_state = APPLICATION_STATE_RUNNING
 
         if platform.system () == "Windows":
-            os.system ( 'cls' )
+            os.system ( APPLICATION_TERMINAL_COMMAND_CLEAR_TERMINAL_WINDOWS )
 
         else:
-            os.system ( 'clear' )
+            os.system ( APPLICATION_TERMINAL_COMMAND_CLEAR_TERMINAL_LINUX )
 
     else:
         application_state = APPLICATION_STATE_RUNNING
@@ -157,21 +303,52 @@ def execute_application_command ( command ):
     return application_state, APPLICATION_COMMAND_NONE
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Get language model response. 
+# Get language model response.
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Function name: query_language_model
+#
+# Description:
+# - This function queries the language model using the provided parameters and returns the response object.
+# - It handles both streaming and non-streaming responses.
+#
+# Parameters:
+# - client (OpenAI): An instance of the OpenAI client used to interact with the language model.
+# - name (str): The name of the language model to be used for querying.
+# - max_tokens (int): The maximum number of tokens to be generated in the response.
+# - temperature (float): The sampling temperature to be used for generating the response.
+# - streaming_enabled (bool): A flag indicating whether streaming is enabled for the response.
+# - conversation_history (list): A list of dictionaries representing the conversation history, including user inputs and system prompts.
+#
+# Return Values:
+# - response (object): The response object from the language model, which can be used to extract the response text or handle streaming responses.
+# - In case of an exception, returns a string containing the error message.
+#
+# Preconditions:
+# - The 'client' parameter must be a valid instance of the OpenAI client.
+# - The 'name' parameter must be a valid string representing a model name.
+# - The 'max_tokens' parameter must be a positive integer.
+# - The 'temperature' parameter must be a float between 0 and 1.
+# - The 'streaming_enabled' parameter must be a boolean.
+# - The 'conversation_history' parameter must be a list of dictionaries formatted correctly for the language model.
+#
+# Postconditions:
+# - The language model is queried with the provided parameters.
+# - The response object from the language model is returned, or an error message is returned in case of an exception.
+#
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def query_language_model ( client, conversation_history ):
+def query_language_model ( client, name, max_tokens, temperature, streaming_enabled, conversation_history ):
     
     try:
 
         # Query the language model. 
 
         response = client.chat.completions.create (
-            model       = model_name,
+            model       = name,
             messages    = conversation_history,
-            max_tokens  = model_max_tokens,
-            temperature = model_temperature,
-            stream      = model_streaming_enabled
+            max_tokens  = max_tokens,
+            temperature = temperature,
+            stream      = streaming_enabled
         )
 
         # Return the response object. 
@@ -187,17 +364,41 @@ def query_language_model ( client, conversation_history ):
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Process language model response.
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Function name: render_language_model_response
+#
+# Description:
+# - This function processes the response from the language model, rendering it to the terminal.
+# - It handles both streaming and non-streaming responses and returns the response text.
+#
+# Parameters:
+# - response (object): The response object from the language model.
+# - application_agent_name_ai (str): The name of the AI agent to be displayed in the terminal prompt.
+# - model_streaming_enabled (bool): A flag indicating whether streaming is enabled for the response.
+#
+# Return Values:
+# - response_text (str): The response text from the language model.
+#
+# Preconditions:
+# - The 'response' parameter must be a valid response object from the language model.
+# - The 'application_agent_name_ai' parameter must be a valid string representing the AI agent's name.
+# - The 'model_streaming_enabled' parameter must be a boolean.
+#
+# Postconditions:
+# - The response from the language model is printed to the terminal.
+# - The complete response text is returned.
+#
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def render_language_model_response ( response ):
+def render_language_model_response ( response, application_agent_name_ai, model_streaming_enabled):
 
     # Initialise local variables.
 
-    response_text     = ''                                  # Initialise to empty string. We'll populate after handing streaming or non-streaming responses.
-    console_prompt_ai = f'[{application_agent_name_ai}]'    # Compile terminal prompt.
+    response_text      = ''                                  # Initialise to empty string. We'll populate after handing streaming or non-streaming responses.
+    terminal_prompt_ai = f'[{application_agent_name_ai}]'    # Compile terminal prompt.
 
     # Print response. 
 
-    print ( f'\n{console_prompt_ai}')
+    print ( f'\n{terminal_prompt_ai}')
 
     if model_streaming_enabled:
 
@@ -230,8 +431,33 @@ def render_language_model_response ( response ):
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Display program info.
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Function name: print_program_info
+#
+# Description:
+# - This function prints information about the language model being used by the application, including the model name,# maximum tokens, temperature, and 
+#   whether streaming is enabled.
+#
+# Parameters:
+# - model_name (str): The name of the language model.
+# - model_max_tokens (int): The maximum number of tokens for the language model's responses.
+# - model_temperature (float): The temperature setting for the language model, controlling the randomness of the output.
+# - model_streaming_enabled (bool): A flag indicating whether streaming is enabled for the language model.
+#
+# Return Values:
+# - None
+#
+# Preconditions:
+# - The 'model_name' parameter must be a valid string representing the model name.
+# - The 'model_max_tokens' parameter must be a positive integer.
+# - The 'model_temperature' parameter must be a float between 0 and 1.
+# - The 'model_streaming_enabled' parameter must be a boolean.
+#
+# Postconditions:
+# - Information about the language model is printed to the terminal.
+#
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def print_program_info ():
+def print_program_info ( model_name, model_max_tokens, model_temperature, model_streaming_enabled ):
 
     print ()
     print ( f'Language Model:' )
@@ -243,8 +469,39 @@ def print_program_info ():
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Shutdown application.
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
+#
+# Function name: save_chat_log_to_file
+#
+# Description:
+# - This function saves the conversation history of the chat application to a text file.
+# - It ensures the target folder exists, determines the next available file name, and writes the conversation history along with model details to the file.
+#
+# Parameters:
+# - application_chat_log_folder (str): The folder path where the chat log will be saved.
+# - model_name (str): The name of the language model used.
+# - model_max_tokens (int): The maximum number of tokens for the language model's responses.
+# - model_temperature (float): The temperature setting for the language model, controlling the randomness of the output.
+# - model_streaming_enabled (bool): A flag indicating whether streaming is enabled for the language model.
+# - model_conversation_history (list): A list of dictionaries representing the conversation history, including user inputs and model responses.
+#
+# Return Values:
+# - None
+#
+# Preconditions:
+# - The 'application_chat_log_folder' parameter must be a valid directory path as a string.
+# - The 'model_name' parameter must be a valid string representing the model name.
+# - The 'model_max_tokens' parameter must be a positive integer.
+# - The 'model_temperature' parameter must be a float between 0 and 1.
+# - The 'model_streaming_enabled' parameter must be a boolean.
+# - The 'model_conversation_history' parameter must be a list of dictionaries formatted correctly.
+#
+# Postconditions:
+# - The conversation history is saved to a new text file in the specified folder.
+# - The file name is printed to the terminal.
+#
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
-def save_chat_log_to_file ( conversation_history ):
+def save_chat_log_to_file ( application_chat_log_folder, model_name, model_max_tokens, model_temperature, model_streaming_enabled, model_conversation_history ):
 
     folder_path = application_chat_log_folder
     
@@ -274,21 +531,42 @@ def save_chat_log_to_file ( conversation_history ):
         file.write ( f'Streaming Enabled: {model_streaming_enabled}\n' )
         file.write ( '\n' )
 
-        for row in conversation_history:
+        for row in model_conversation_history:
             file.write ( f'[{row [ "role" ]}]\n{row [ "content" ]}\n\n' )
 
     print ( f'\nConversation history saved to "{file_name}."' )
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Main program.
-# - Program entry point. 
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+#
+# Function name: main
+#
+# Description:
+# - This is the entry point for the conversation agent application.
+# - It initiates the main loop of the application, which handles user input, queries the language model, and processes application commands.
+#
+# Parameters:
+# - parameter_name (data_type): Description of parameter.
+# - parameter_name (data_type): Description of parameter.
+# - None
+#
+# Return Values:
+# - return_value (data_type): Description of return value.
+# - return_value (data_type): Description of return value.
+# - None
+#
+# Preconditions:
+# - Precondition description.
+# - Precondition description.
+#
+# Postconditions:
+# - Postcondition description.
+# - Postcondition description.
+#
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def main():
-
-    # Display program information.
-
-    print_program_info ()
 
     # Execute main loop. 
 
@@ -297,3 +575,27 @@ def main():
 if __name__ == "__main__":
 
     main ()
+
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Function tag line. e.g. Execute this or that. 
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
+#
+# Function name: function_name
+#
+# Description:
+# - bla bla bla.
+# - bla bla bla.
+#
+# Parameters:
+# - None
+#
+# Return Values:
+# - None
+#
+# Preconditions:
+# - The script is executed as the main module.
+#
+# Postconditions:
+# - The main loop of the application is started and runs until an exit command is received.
+#
+#-------------------------------------------------------------------------------------------------------------------------------------------------------------
