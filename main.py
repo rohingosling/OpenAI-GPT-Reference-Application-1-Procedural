@@ -122,7 +122,7 @@ def main_loop ():
  
         # Get user input prompt.
         # 1. Get the user's input prompt from the terminal.
-        # 2. Identify and initialise any application commands the user may have issued.
+        # 2. Identify and initialize any application commands the user may have issued.
         # 3. Save the user's prompt to the conversation history.
 
         user_input          = get_user_prompt ( application_agent_name_user )        
@@ -180,16 +180,11 @@ def main_loop ():
 
 def get_user_prompt ( application_agent_name_user ):
 
-    # Compile terminal prompt for the user.
+    # Compile terminal prompt, get prompt text from the user, and return the prompt to the caller. 
 
     terminal_prompt_user = f'[{application_agent_name_user}]'
-
-    # Get prompt text from the user and return the prompt to the caller. 
-
-    user_prompt = input ( f'\n{terminal_prompt_user}\n' )
-
-    # REturn user prompt to the caller.     
-
+    user_prompt          = input ( f'\n{terminal_prompt_user}\n' )
+    
     return user_prompt
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -199,7 +194,7 @@ def get_user_prompt ( application_agent_name_user ):
 #
 # Description:
 # - This function processes the user's input prompt to identify and return any application command embedded within the prompt.
-# - It normalizes the user prompt to lower case and checks for specific command keywords to determine the appropriate command.
+# - It normalizes the user prompt to lowercase and checks for specific command keywords to determine the appropriate command.
 #
 # Parameters:
 # - user_prompt (str): The input prompt provided by the user.
@@ -577,7 +572,7 @@ if __name__ == "__main__":
     main ()
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
-# Function tag line. e.g. Execute this or that. 
+# Function tagline. e.g. Execute this or that. 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 #
 # Function name: function_name
