@@ -32,7 +32,7 @@
    - Click the **New...** button under the "User variables" section if you want to set it for your user only, or under the "System variables" section if you want it to be available system-wide.
 
 8. **Set the Variable Name and Value:**
-   - In the New User Variable or New System Variable window that pops up, enter `OPEN_API_KEY` in the **Variable name** field.
+   - In the New User Variable or New System Variable window that pops up, enter `OPENAI_API_KEY` in the **Variable name** field.
    - In the **Variable value** field, paste your OpenAI API key.
 
 9. **Save the Environment Variable:**
@@ -42,4 +42,4 @@
 
 10. **Verify the Environment Variable:**
     - Open a new Command Prompt or PowerShell window to verify that the environment variable has been set correctly.
-    - Type `echo %OPEN_API_KEY%` in Command Prompt or `echo $env:OPEN_API_KEY` in PowerShell and press Enter. This should display your OpenAI API key.
+    - Type `echo %OPENAI_API_KEY%` in Command Prompt or `echo $env:OPENAI_API_KEY` in PowerShell and press Enter. This should display your OpenAI API key.
