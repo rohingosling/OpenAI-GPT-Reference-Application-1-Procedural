@@ -78,6 +78,45 @@ Conversation history saved to "chat_log\chat_log_8.txt."
 
 (venv) X:\Projects\common_python\application\chatbot\v1>
 ```
+**Open `data/chat_log_X.txt` to review chatlog**
+```cmd.exe
+Application:
+- Name:    Conversation Agent Reference Application
+- Version: 2.0
+
+Model:
+- Name:              gpt-3.5-turbo
+- Max Tokens:        1024
+- Temperature:       0.7
+- Streaming Enabled: True
+
+[user]
+Hello, how are you doing?
+
+[assistant]
+Hello! I'm here and ready to assist you. How can I help you today?
+
+[user]
+What is 1 + 1?
+
+[assistant]
+1 + 1 equals 2. If you have any more math questions or need further assistance, feel free to ask!
+
+[user]
+List the UAE Emirates.
+
+[assistant]
+The United Arab Emirates (UAE) consists of seven emirates. Here is a list of the seven emirates:
+1. Abu Dhabi
+2. Dubai
+3. Sharjah
+4. Ajman
+5. Umm Al-Quwain
+6. Ras Al Khaimah
+7. Fujairah
+
+If you have any more questions about the UAE or anything else, feel free to ask!
+```
 
 ## Installation
 
