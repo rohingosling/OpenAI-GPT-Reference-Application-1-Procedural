@@ -45,7 +45,12 @@
 #
 # - To-Do:
 #   1. Update README.md file. 
-#   2. Add more error handling and testing. 
+#   2. Add more error handling and testing.
+#   3. Print error message if no response is returned from model, for example if there is no internat connection. 
+#   4. Test error conditions. 
+#   5. Restructure system prompt initialization, so that initialization of the system prompt takes place in the initialization function.
+#   6. Add feedback in both the console and chat log files, to show the system prompt file name. Or whether the default system prompt was used.  
+#   7. Add a test command to show the system prompt.
 #
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 
@@ -105,7 +110,7 @@ MODEL_NAME_GPT_4O             = 'gpt-4o'
 MODEL_MESSAGE_ROLE_SYSTEM     = 'system'
 MODEL_MESSAGE_ROLE_USER       = 'user'
 MODEL_MESSAGE_ROLE_AI         = 'assistant'
-MODEL_SYSTEM_PROMPT_FILE_NAME = 'data\system_prompt.txt'
+MODEL_SYSTEM_PROMPT_FILE_NAME = 'data/system_prompt.txt'
 MODEL_SYSTEM_PROMPT_DEFAULT   = 'You are a general purpose AI assistant. You always provide well-reasoned answers that are both correct and helpful.'
 
 
@@ -527,45 +532,51 @@ def query_language_model ( model ):
 
 def render_language_model_response ( application, model, model_response ):
 
-    # Initialise local variables. 
+    try:
 
-    agent_name_ai           = application [ KEY_APPLICATION_AGENT_NAME_AI ]
-    model_streaming_enabled = model       [ KEY_MODEL_STREAMING_ENABLED   ]    
-    terminal_prompt_ai      = f'[{agent_name_ai}]'                          # Compile terminal prompt.
-    response_text           = ''                                            # Initialise to empty string. We'll populate after handing streaming or non-streaming responses.
-    
-    # Print response. 
+        # Initialise local variables. 
 
-    print ( f'\n{terminal_prompt_ai}')
-
-    # Render model response. 
-
-    if model_streaming_enabled:
-
-        # Output chunk by chunk as the response is streamed. 
-
-        response_stream = { 'role' : 'assistant', 'content' : '' }
-    
-        for chunk in model_response:
-            if chunk.choices [ 0 ].delta.content:
-                print ( chunk.choices [ 0 ].delta.content, end = '', flush = True )
-                response_stream [ 'content' ] += chunk.choices [ 0 ].delta.content
-        print ()
-
-        # For a streamed response, get the response text from the completed response stream.
-
-        response_text = response_stream [ 'content' ]
+        agent_name_ai           = application [ KEY_APPLICATION_AGENT_NAME_AI ]
+        model_streaming_enabled = model       [ KEY_MODEL_STREAMING_ENABLED   ]    
+        terminal_prompt_ai      = f'[{agent_name_ai}]'                          # Compile terminal prompt.
+        response_text           = ''                                            # Initialise to empty string. We'll populate after handing streaming or non-streaming responses.
         
-    else:
+        # Print response. 
 
-        # For a non-streamed response, get the response text from the response object, and write to the terminal. 
+        print ( f'\n{terminal_prompt_ai}')
 
-        response_text = model_response.choices [ 0 ].message.content
-        print ( f"{response_text}" )
+        # Render model response. 
 
-    # Return language model response text. 
+        if model_streaming_enabled:
 
-    return response_text
+            # Output chunk by chunk as the response is streamed. 
+
+            response_stream = { 'role' : 'assistant', 'content' : '' }
+        
+            for chunk in model_response:
+                if chunk.choices [ 0 ].delta.content:
+                    print ( chunk.choices [ 0 ].delta.content, end = '', flush = True )
+                    response_stream [ 'content' ] += chunk.choices [ 0 ].delta.content
+            print ()
+
+            # For a streamed response, get the response text from the completed response stream.
+
+            response_text = response_stream [ 'content' ]
+            
+        else:
+
+            # For a non-streamed response, get the response text from the response object, and write to the terminal. 
+
+            response_text = model_response.choices [ 0 ].message.content
+            print ( f"{response_text}" )
+
+        # Return language model response text. 
+
+        return response_text
+    
+    except Exception as e:
+
+        return f'\n[ERROR]\n{str(e)}\n'
         
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
