@@ -23,11 +23,14 @@ General purpose OpenAI GPT API reference application, demonstrating the basic la
 
 Run the program with `python main.py`, or using the `run.bat` batch file. 
 
+**Activate Python virtual environment**
 ```cmd.exe
 X:\Projects\common_python\application\chatbot\v1>venv_activate
 
 X:\Projects\common_python\application\chatbot\v1>venv\scripts\activate
-
+```
+**Run program**
+```cmd.exe
 (venv) X:\Projects\common_python\application\chatbot\v1>python main.py
 
 Application:
