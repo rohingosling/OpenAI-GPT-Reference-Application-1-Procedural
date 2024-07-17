@@ -1,45 +1,156 @@
-# OpenAI GPT API reference program
+# OpenAI GPT Chatbot Reference Application
+**Version:** 1.0 (Procedural version)
 
-## Overview
+General purpose OpenAI GPT API reference application, demonstrating the basic layout and features of a LLM based chatgpt with conversation history, user commands, and saving to chat log file.
 
-- Simple turn-based chatbot with context history.
-- Saves chat logs to file.
-- Procedural programming.
+## Table of Contents
+3. [Features](#features)
+2. [Installation](#installation)
+3. [Usage](#usage)
+4. [Features](#features)
+5. [Contributing](#contributing)
+6. [License](#license)
+7. [Contact Information](#contact-information)
+8. [Acknowledgements](#acknowledgements)
 
-## Add OpenAI API Key environment variable in Windows
+## Features
+- Terminal hosted tern-based chatbot. 
+- Conversation history maintained during conversation. 
+- System prompt loaded from text file. 
+- Chat log saved to text file.
 
-1. **Copy the OpenAI API Key:**
-   - Ensure you have your OpenAI API key copied to your clipboard. You'll need this key for the following steps.
+## Usage
 
-2. **Open the Start Menu:**
-   - Click on the **Start** button (Windows icon) on the bottom left corner of your screen or press the **Windows key** on your keyboard.
+Run the program with `python main.py`, or using the `run.bat` batch file. 
 
-3. **Open Settings:**
-   - In the Start menu, click on **Settings** (the gear icon).
+```cmd.exe
+X:\Projects\common_python\application\chatbot\v1>venv_activate
 
-4. **Navigate to System Settings:**
-   - In the Settings window, click on **System**.
+X:\Projects\common_python\application\chatbot\v1>venv\scripts\activate
 
-5. **Open Advanced System Settings:**
-   - Scroll down and select **About** from the left sidebar.
-   - On the right side, under "Related settings," click on **Advanced system settings**. This will open the System Properties window.
+(venv) X:\Projects\common_python\application\chatbot\v1>python main.py
 
-6. **Open Environment Variables:**
-   - In the System Properties window, click on the **Environment Variables...** button near the bottom right corner.
+Application:
+- Name:    Conversation Agent Reference Application
+- Version: 2.0
 
-7. **Create a New Environment Variable:**
-   - In the Environment Variables window, you will see two sections: "User variables" and "System variables."
-   - Click the **New...** button under the "User variables" section if you want to set it for your user only, or under the "System variables" section if you want it to be available system-wide.
+Model:
+- Name:              gpt-3.5-turbo
+- Max Tokens:        1024
+- Temperature:       0.7
+- Streaming Enabled: True
 
-8. **Set the Variable Name and Value:**
-   - In the New User Variable or New System Variable window that pops up, enter `OPENAI_API_KEY` in the **Variable name** field.
-   - In the **Variable value** field, paste your OpenAI API key.
+[User]
+Hello, how are you doing?
 
-9. **Save the Environment Variable:**
-   - Click **OK** to close the New User Variable or New System Variable window.
-   - Click **OK** again to close the Environment Variables window.
-   - Click **OK** once more to close the System Properties window.
+[AI]
+Hello! I'm here and ready to assist you. How can I help you today?
 
-10. **Verify the Environment Variable:**
-    - Open a new Command Prompt or PowerShell window to verify that the environment variable has been set correctly.
-    - Type `echo %OPENAI_API_KEY%` in Command Prompt or `echo $env:OPENAI_API_KEY` in PowerShell and press Enter. This should display your OpenAI API key.
+[User]
+What is 1 + 1?
+
+[AI]
+1 + 1 equals 2. If you have any more math questions or need further assistance, feel free to ask!
+
+[User]
+List the UAE Emirates.
+
+[AI]
+The United Arab Emirates (UAE) consists of seven emirates. Here is a list of the seven emirates:
+1. Abu Dhabi
+2. Dubai
+3. Sharjah
+4. Ajman
+5. Umm Al-Quwain
+6. Ras Al Khaimah
+7. Fujairah
+
+If you have any more questions about the UAE or anything else, feel free to ask!
+
+[User]
+exit
+
+[SYSTEM]
+Conversation history saved to "chat_log\chat_log_8.txt."
+
+(venv) X:\Projects\common_python\application\chatbot\v1>
+```
+
+## Installation
+
+### Prerequisites
+
+- Python 3.x
+- OpenAI API
+  
+  - `pip install --upgrade openai`
+  
+    or
+
+  - `pip install openai`
+
+    or
+    
+  - use the `venv_install_requirements.bat` batch file, which will `pip install` the dependencies from the `venv_requirements.txt` file. 
+
+### Clone repository
+
+1. Clone the repository:
+    ```sh
+    git clone https://github.com/your-username/your-repo.git
+    ```
+
+2. Navigate to the project directory:
+    ```sh
+    cd your-repo
+    ```
+
+### Python Virtual Environment Setup
+
+3. Create and activate the virtual environment using the provided batch files:
+
+   If you are using Windows, for the sake of convenience, a set of `venv_*.bat` batch files is provided to create, manage and maintain the Python virtual environment.
+
+    - To create the virtual environment and activate it, run:
+      ```sh
+      venv_create.bat
+      ```
+    - If you need to activate the virtual environment later, run:
+      ```sh
+      venv_activate.bat
+      ```
+    - To deactivate the virtual environment, run:
+      ```sh
+      venv_deactivate.bat
+      ```
+    - To delete the virtual environment, run:
+      ```sh
+      venv_delete.bat
+      ```
+
+4. Install the required packages:
+    ```sh
+    venv_install_requirements.bat
+    ```
+
+5. To save the current list of installed packages to `venv_requirements.txt`, run:
+    ```sh
+    venv_save_requirements.bat
+    ```
+## Contributing
+Contributions are welcome! Please follow the contribution guidelines.
+1. Fork the project.
+2. Create your feature branch (git checkout -b feature/AmazingFeature).
+3. Commit your changes (git commit -m 'Add some AmazingFeature').
+4. Push to the branch (git push origin feature/AmazingFeature).
+5. Open a pull request.
+
+## License
+Distributed under the MIT License. See LICENSE for more information.
+
+## Contact Information
+- Twitter: [@rohingosling](https://x.com/rohingosling)
+- Project Link: [https://github.com/rohingosling/OpenAI-GPT-Reference-Application-1-Procedural](https://github.com/rohingosling/OpenAI-GPT-Reference-Application-1-Procedural)
+
+## Acknowledgments
+- [OpenAI Platform](https://platform.openai.com/docs/overview)
