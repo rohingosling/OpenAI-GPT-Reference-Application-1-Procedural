@@ -24,7 +24,7 @@ General purpose OpenAI GPT API reference application, demonstrating the basic la
 
 Activate the Python virtual environment, and then run the program with `python main.py`, or using the `run.bat` batch file. 
 
-![Alt text](images/test_run_01.png)
+![test_run_01.png](images/test_run_01.png)
 
 
 ## Installation
