@@ -26,6 +26,10 @@ Activate the Python virtual environment, and then run the program with `python m
 
 ![test_run_01.png](images/test_run_01.png)
 
+The chat log is saved to a text file after exiting the program.
+
+![chat_log_screenshot_01.png](images/chat_log_screenshot_01.png)
+
 
 ## Installation
 
