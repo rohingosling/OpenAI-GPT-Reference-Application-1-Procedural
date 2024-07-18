@@ -1,0 +1,49 @@
+
+Application:
+- Name:    Conversation Agent Reference Application
+- Version: 2.0
+
+Model:
+- Name:              gpt-3.5-turbo
+- Max Tokens:        1024
+- Temperature:       0.7
+- Streaming Enabled: True
+
+[user]
+Hello
+
+[assistant]
+Hello! How can I assist you today?
+
+[user]
+Count to 10.
+
+[assistant]
+Of course! Here we go:
+
+1, 2, 3, 4, 5, 6, 7, 8, 9, 10. 
+
+There you have it! If you need anything else, feel free to ask.
+
+[user]
+List the UAE Emirits.
+
+[assistant]
+It seems like there might be a slight spelling error in your question. Did you mean to ask for a list of the emirates in the United Arab Emirates (UAE)? If so, here they are:
+
+1. Abu Dhabi
+2. Dubai
+3. Sharjah
+4. Ajman
+5. Umm Al-Quwain
+6. Fujairah
+7. Ras Al Khaimah
+
+These are the seven emirates that make up the United Arab Emirates. Let me know if you need more information or if you have any other questions.
+
+[user]
+Thank you for the spelling correction.
+
+[assistant]
+You're welcome! If you have any more questions or need further assistance, feel free to ask. I'm here to help!
+
