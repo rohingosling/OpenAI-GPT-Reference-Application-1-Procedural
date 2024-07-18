@@ -15,7 +15,8 @@ General purpose OpenAI GPT API reference application, demonstrating the basic la
 
 ## Features
 - Terminal hosted tern-based chatbot. 
-- Conversation history maintained during conversation. 
+- Conversation history maintained during conversation.
+- Terminal command manager.
 - System prompt loaded from text file. 
 - Chat log saved to text file.
 
