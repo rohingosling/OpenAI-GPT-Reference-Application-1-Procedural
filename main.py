@@ -1,6 +1,6 @@
 #---------------------------------------------------------------------------------------------------------------------------------------------------------
 # Application   Conversation Agent Reference Application
-# Version:      2.0
+# Version:      1.0
 # Release Date: 2024-04-06
 # Author:       Rohin Gosling
 #
@@ -44,10 +44,6 @@
 #   1. `venv_activate.bat` to activate the Python virtual environment.
 #
 # - To-Do:
-#   1. Update README.md file. 
-#   2. Add more error handling and testing.
-#   3. Print error message if no response is returned from model, for example if there is no internat connection. 
-#   4. Test error conditions. 
 #   5. Restructure system prompt initialization, so that initialization of the system prompt takes place in the initialization function.
 #   6. Add feedback in both the console and chat log files, to show the system prompt file name. Or whether the default system prompt was used.  
 #   7. Add a test command to show the system prompt.
@@ -162,6 +158,8 @@ KEY_MODEL_CONVERSATION_HISTORY = 'conversation_history'
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 def application_initialize ():
+
+    # Initialise application. 
    
     application = {
         KEY_APPLICATION_NAME                    : 'Conversation Agent Reference Application',
@@ -175,14 +173,28 @@ def application_initialize ():
         KEY_APPLICATION_STATE                   : APPLICATION_STATE_IDLE        
     }
 
+    # Initialise language model. 
+
     model = {
         KEY_MODEL_CLIENT                  : OpenAI ( api_key = os.environ [ 'OPENAI_API_KEY' ] ),
         KEY_MODEL_NAME                    : MODEL_NAME_GPT_3_5_TURBO,
         KEY_MODEL_MAX_TOKENS              : 1024,
         KEY_MODEL_TEMPERATURE             : 0.7,
-        KEY_MODEL_STREAMING_ENABLED       : True,
-        KEY_MODEL_CONVERSATION_HISTORY    : []     
+        KEY_MODEL_STREAMING_ENABLED       : True,        
+        KEY_MODEL_CONVERSATION_HISTORY    : []
     }
+
+    # Add system prompt to conversation history.
+    # - If a system prompt can not be loaded from the file, then just use the default system prompt. 
+
+    model_system_prompt = load_text_to_string ( MODEL_SYSTEM_PROMPT_FILE_NAME )
+
+    if model_system_prompt == '':
+        model_system_prompt = MODEL_SYSTEM_PROMPT_DEFAULT
+
+    add_message_to_conversation_history ( model, model_system_prompt, MODEL_MESSAGE_ROLE_SYSTEM ) 
+
+    # Return to caller. 
 
     return application, model
 
@@ -216,18 +228,6 @@ def application_initialize ():
 
 def main_loop ( application, model ):
 
-    # Initialise system prompt.
-    # - If a system prompt can not be loaded from the file, then just use the default system prompt. 
-
-    model_system_prompt = load_text_to_string ( MODEL_SYSTEM_PROMPT_FILE_NAME )
-
-    if model_system_prompt == '':
-        model_system_prompt = MODEL_SYSTEM_PROMPT_DEFAULT
-
-    # Add system prompt to the beginning of conversion history.
-
-    add_message_to_conversation_history ( model, model_system_prompt, MODEL_MESSAGE_ROLE_SYSTEM )
-
     # Initialise main loop.  
 
     application [ KEY_APPLICATION_COMMAND ] = APPLICATION_COMMAND_NONE
@@ -245,12 +245,14 @@ def main_loop ( application, model ):
         user_input                              = get_user_prompt ( application )        
         application [ KEY_APPLICATION_COMMAND ] = get_application_command ( user_input )                
         
-        # Query language model and update conversation history.             
-        # 1. Query language model. We will return the response object, not the text. The renderer will decide whether to extract response text or use the 
+        # Query language model and update conversation history.
+        # 1. Append user input to conversation history. We add the user input to teh conversation history here, so that it doesn't get added in the case of a 
+        #    command like `exit` for example, where we would not want the conversation history added when it is being written to the chat log later. 
+        # 2. Query language model. We will return the response object, not the text. The renderer will decide whether to extract response text or use the 
         #    object based on whether `model_streaming_enabled` is True or not.
-        # 2. Render model response. `model_streaming_enabled` is True then we will render streaming output from the model, otherwise we will just render
+        # 3. Render model response. `model_streaming_enabled` is True then we will render streaming output from the model, otherwise we will just render
         #    the complete response text from the model. 
-        # 3. Append language model response to conversation history.
+        # 4. Append language model response to conversation history.
 
         if application [ KEY_APPLICATION_COMMAND ] == APPLICATION_COMMAND_NONE:
 
@@ -498,7 +500,11 @@ def query_language_model ( model ):
     
     except Exception as e:
 
-        return f'\n[ERROR]\n{str(e)}\n'
+        error_message = f'\n[ERROR] {str(e)}\n'
+
+        print ( error_message )
+
+        return error_message
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
 # Render the language model's response.
@@ -576,7 +582,11 @@ def render_language_model_response ( application, model, model_response ):
     
     except Exception as e:
 
-        return f'\n[ERROR]\n{str(e)}\n'
+        error_message = f'\n[ERROR] {str(e)}\n'
+
+        print ( error_message )
+
+        return error_message
         
 
 #-------------------------------------------------------------------------------------------------------------------------------------------------------------
