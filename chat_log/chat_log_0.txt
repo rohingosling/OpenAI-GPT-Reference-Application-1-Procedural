@@ -28,7 +28,7 @@ What is 1+1?
 1 + 1 equals 2. Is there anything else you would like to know or discuss?
 
 [user]
-Write a Python program to printo "Hello World!" to the terminal.
+Write a Python program to print "Hello World!" to the terminal.
 
 [assistant]
 You can write a simple Python program to print "Hello World!" to the terminal using the following code:
