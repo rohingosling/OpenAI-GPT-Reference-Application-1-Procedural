@@ -22,105 +22,10 @@ General purpose OpenAI GPT API reference application, demonstrating the basic la
 
 ## Usage
 
-Run the program with `python main.py`, or using the `run.bat` batch file. 
+Activate the Python virtual environment, and then run the program with `python main.py`, or using the `run.bat` batch file. 
 
+![Alt text](images/test_run_01.png)
 
-**Activate Python virtual environment**
-```cmd.exe
-X:\Projects\common_python\application\chatbot\v1>venv_activate
-
-X:\Projects\common_python\application\chatbot\v1>venv\scripts\activate
-```
-
-**Run program**
-```cmd.exe
-(venv) X:\Projects\common_python\application\chatbot\v1>python main.py
-
-Application:
-- Name:    Conversation Agent Reference Application
-- Version: 2.0
-
-Model:
-- Name:              gpt-3.5-turbo
-- Max Tokens:        1024
-- Temperature:       0.7
-- Streaming Enabled: True
-
-[User]
-Hello, how are you doing?
-
-[AI]
-Hello! I'm here and ready to assist you. How can I help you today?
-
-[User]
-What is 1 + 1?
-
-[AI]
-1 + 1 equals 2. If you have any more math questions or need further assistance, feel free to ask!
-
-[User]
-List the UAE Emirates.
-
-[AI]
-The United Arab Emirates (UAE) consists of seven emirates. Here is a list of the seven emirates:
-1. Abu Dhabi
-2. Dubai
-3. Sharjah
-4. Ajman
-5. Umm Al-Quwain
-6. Ras Al Khaimah
-7. Fujairah
-
-If you have any more questions about the UAE or anything else, feel free to ask!
-
-[User]
-exit
-
-[SYSTEM]
-Conversation history saved to "chat_log\chat_log_8.txt."
-
-(venv) X:\Projects\common_python\application\chatbot\v1>
-```
-
-**Open `data/chat_log_X.txt` to review chatlog**
-```cmd.exe
-Application:
-- Name:    Conversation Agent Reference Application
-- Version: 2.0
-
-Model:
-- Name:              gpt-3.5-turbo
-- Max Tokens:        1024
-- Temperature:       0.7
-- Streaming Enabled: True
-
-[user]
-Hello, how are you doing?
-
-[assistant]
-Hello! I'm here and ready to assist you. How can I help you today?
-
-[user]
-What is 1 + 1?
-
-[assistant]
-1 + 1 equals 2. If you have any more math questions or need further assistance, feel free to ask!
-
-[user]
-List the UAE Emirates.
-
-[assistant]
-The United Arab Emirates (UAE) consists of seven emirates. Here is a list of the seven emirates:
-1. Abu Dhabi
-2. Dubai
-3. Sharjah
-4. Ajman
-5. Umm Al-Quwain
-6. Ras Al Khaimah
-7. Fujairah
-
-If you have any more questions about the UAE or anything else, feel free to ask!
-```
 
 ## Installation
 
