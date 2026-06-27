@@ -1,0 +1,6 @@
+# Runtime dependency for the chatbot -- the OpenAI Python SDK.
+#
+# Unpinned floor (>=) so a fresh install resolves a wheel for the current Python; the
+# README quick-start likewise installs the latest openai. venv_requirements.txt holds the
+# full, exactly-pinned environment snapshot (this SDK plus all its transitive deps).
+openai>=1.35.13
